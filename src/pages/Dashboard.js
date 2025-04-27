@@ -83,6 +83,7 @@ const Dashboard = () => {
       setProjects((prev) =>
         prev.filter((project) => project._id !== projectId)
       );
+      navigate("/dashboard");
     } catch (error) {
       console.error(error);
       alert("Failed to delete project. Try again.");
