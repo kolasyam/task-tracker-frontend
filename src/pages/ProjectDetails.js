@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 
 const ProjectDetails = () => {
@@ -53,6 +53,35 @@ const ProjectDetails = () => {
     fetchUserProfile();
   }, []);
 
+  const fetchTasks = useCallback(async () => {
+    const token = localStorage.getItem("usertoken");
+    if (!token) return;
+
+    try {
+      setTasksLoading(true);
+      const response = await fetch(
+        `https://task-tracker-backend-5wn1.onrender.com/api/tasks/${projectId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch tasks");
+      }
+
+      const tasksData = await response.json();
+      setTasks(tasksData);
+    } catch (error) {
+      console.error(error);
+      setError("Error fetching tasks.");
+    } finally {
+      setTasksLoading(false);
+    }
+  }, [projectId]);
+
   useEffect(() => {
     const fetchProject = async () => {
       const token = localStorage.getItem("usertoken");
@@ -87,36 +116,7 @@ const ProjectDetails = () => {
 
     fetchTasks();
     fetchProject();
-  }, [projectId, navigate]);
-
-  const fetchTasks = async () => {
-    const token = localStorage.getItem("usertoken");
-    if (!token) return;
-
-    try {
-      setTasksLoading(true);
-      const response = await fetch(
-        `https://task-tracker-backend-5wn1.onrender.com/api/tasks/${projectId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch tasks");
-      }
-
-      const tasksData = await response.json();
-      setTasks(tasksData);
-    } catch (error) {
-      console.error(error);
-      setError("Error fetching tasks.");
-    } finally {
-      setTasksLoading(false);
-    }
-  };
+  }, [projectId, navigate, fetchTasks]);
 
   const handleAddTask = () => {
     // Reset form for new task
